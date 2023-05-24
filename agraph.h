@@ -5,8 +5,8 @@
  *      Author: pperezm
  */
 
-#ifndef UGRAPH_H_
-#define UGRAPH_H_
+#ifndef AGRAPH_H_
+#define AGRAPH_H_
 
 #include <sstream>
 #include <set>
@@ -23,7 +23,7 @@
 /***********************************************************/
 #define EPSILON 'E'
 
-class ListGraph
+class AutomataGraph
 {
 private:
 	int start;
@@ -33,8 +33,8 @@ private:
 	std::map<int, std::set<std::pair<int, char>>> edges;
 
 public:
-	ListGraph();
-	ListGraph(const ListGraph &);
+	AutomataGraph();
+	AutomataGraph(const AutomataGraph &);
 
 	void addEdge(int from, int to, char l);
 	void addVertex(int v);
@@ -50,7 +50,7 @@ public:
 
 	int createVertex();
 
-	std::pair<int, int> connectGraphToVertex(ListGraph g, int v);
+	std::pair<int, int> connectGraphToVertex(AutomataGraph g, int v);
 
 	void setStart(int s) { start = s; }
 	int getStart() const { return start; }
@@ -66,12 +66,12 @@ public:
 	std::string toString() const;
 };
 
-ListGraph::ListGraph()
+AutomataGraph::AutomataGraph()
 {
 	next = 0;
 }
 
-ListGraph::ListGraph(const ListGraph &g)
+AutomataGraph::AutomataGraph(const AutomataGraph &g)
 {
 	start = g.start;
 	end = g.end;
@@ -80,7 +80,7 @@ ListGraph::ListGraph(const ListGraph &g)
 	edges = g.edges;
 }
 
-void ListGraph::addEdge(int from, int to, char l)
+void AutomataGraph::addEdge(int from, int to, char l)
 {
 	if (vertexes.find(from) == vertexes.end())
 		addVertex(from);
@@ -91,7 +91,7 @@ void ListGraph::addEdge(int from, int to, char l)
 	edges[from].insert(std::pair<int, char>(to, l));
 }
 
-void ListGraph::addVertex(int v)
+void AutomataGraph::addVertex(int v)
 {
 	if (vertexes.find(v) == vertexes.end())
 	{
@@ -100,12 +100,12 @@ void ListGraph::addVertex(int v)
 	}
 }
 
-bool ListGraph::containsVertex(int v) const
+bool AutomataGraph::containsVertex(int v) const
 {
 	return (vertexes.find(v) != vertexes.end());
 }
 
-std::set<int> ListGraph::getNeighbours(int v) const
+std::set<int> AutomataGraph::getNeighbours(int v) const
 {
 	std::set<std::pair<int, char>> neighbours(edges.at(v));
 	std::set<int> result;
@@ -117,13 +117,13 @@ std::set<int> ListGraph::getNeighbours(int v) const
 	return result;
 }
 
-std::set<int> ListGraph::eClosure(int v) const
+std::set<int> AutomataGraph::eClosure(int v) const
 {
 	std::set<int> visited;
 	return eClosure(v, visited);
 }
 
-std::set<int> ListGraph::eClosure(int v, std::set<int> visited) const
+std::set<int> AutomataGraph::eClosure(int v, std::set<int> visited) const
 {
 	std::set<int> result;
 	result.insert(v);
@@ -140,7 +140,7 @@ std::set<int> ListGraph::eClosure(int v, std::set<int> visited) const
 	return result;
 }
 
-std::set<int> ListGraph::eClosure(std::set<int> v) const
+std::set<int> AutomataGraph::eClosure(std::set<int> v) const
 {
 	std::set<int> result;
 	for (auto v2 : v)
@@ -152,7 +152,7 @@ std::set<int> ListGraph::eClosure(std::set<int> v) const
 	return result;
 }
 
-char ListGraph::getWeight(int from, int to) const
+char AutomataGraph::getWeight(int from, int to) const
 {
 	for (auto v : edges.at(from))
 	{
@@ -163,7 +163,7 @@ char ListGraph::getWeight(int from, int to) const
 	return NULL;
 }
 
-int ListGraph::createVertex()
+int AutomataGraph::createVertex()
 {
 	int v = next;
 	next++;
@@ -174,7 +174,7 @@ int ListGraph::createVertex()
 	return v;
 }
 
-std::pair<int, int> ListGraph::connectGraphToVertex(ListGraph g, int v)
+std::pair<int, int> AutomataGraph::connectGraphToVertex(AutomataGraph g, int v)
 {
 	std::vector<int> vertexes = g.getVertexes();
 	std::map<int, int> newVertexes;
@@ -203,7 +203,7 @@ std::pair<int, int> ListGraph::connectGraphToVertex(ListGraph g, int v)
 	return std::pair<int, int>(newVertexes[g.getStart()], newVertexes[g.getEnd()]);
 }
 
-std::string ListGraph::toString() const
+std::string AutomataGraph::toString() const
 {
 	std::stringstream aux;
 
@@ -221,7 +221,7 @@ std::string ListGraph::toString() const
 	return aux.str();
 }
 
-std::vector<int> ListGraph::getVertexes() const
+std::vector<int> AutomataGraph::getVertexes() const
 {
 	std::vector<int> result(vertexes.begin(), vertexes.end());
 	return result;
@@ -232,7 +232,7 @@ std::vector<int> ListGraph::getVertexes() const
 /***********************************************************/
 
 std::vector<int> dfs(const int &start,
-					 const ListGraph *graph)
+					 const AutomataGraph *graph)
 {
 
 	std::vector<int> visited;
@@ -263,7 +263,7 @@ std::vector<int> dfs(const int &start,
 /**************************** BFS **************************/
 /***********************************************************/
 
-std::vector<int> bfs(const int &start, const ListGraph *graph)
+std::vector<int> bfs(const int &start, const AutomataGraph *graph)
 {
 	std::vector<int> visited;
 	std::queue<int> pending;

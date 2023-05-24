@@ -1,24 +1,26 @@
-#include "ugraph.h"
+#include "agraph.h"
 #include <stack>
 #include <map>
 #include <queue>
 
+#define CONCAT_OPERATOR '.'
+
 class Automata
 {
 private:
-    ListGraph graph;
+    AutomataGraph graph;
     int start;
     std::set<int> final;
     std::set<char> alphabet;
 
-    std::stack<ListGraph> expressions;
+    std::stack<AutomataGraph> expressions;
     std::stack<char> operators;
 
     std::string exprStr;
-    ListGraph star(const ListGraph &);
-    ListGraph plus(const ListGraph &);
-    ListGraph concat(const ListGraph &, const ListGraph &);
-    ListGraph orOp(const ListGraph &, const ListGraph &);
+    AutomataGraph star(const AutomataGraph &);
+    AutomataGraph plus(const AutomataGraph &);
+    AutomataGraph concat(const AutomataGraph &, const AutomataGraph &);
+    AutomataGraph orOp(const AutomataGraph &, const AutomataGraph &);
 
     void applyOperator(char);
 
@@ -28,11 +30,11 @@ public:
         exprStr = expr;
     }
 
-    ListGraph build();
-    ListGraph transform();
+    AutomataGraph build();
+    AutomataGraph transform();
 };
 
-ListGraph Automata::build()
+AutomataGraph Automata::build()
 {
     enum TokenType
     {
@@ -49,7 +51,7 @@ ListGraph Automata::build()
 
             if (lastToken == OPERAND)
             {
-                operators.push('.');
+                operators.push(CONCAT_OPERATOR);
             }
             operators.push(c);
             lastToken = OPERATOR;
@@ -66,12 +68,11 @@ ListGraph Automata::build()
             }
             lastToken = OPERAND;
             break;
-
         case '*':
         case '+':
             applyOperator(c);
             break;
-        case '.':
+        case CONCAT_OPERATOR:
         case '|':
             operators.push(c);
             lastToken = OPERATOR;
@@ -80,11 +81,11 @@ ListGraph Automata::build()
 
             if (lastToken == OPERAND)
             {
-                operators.push('.');
+                operators.push(CONCAT_OPERATOR);
             }
 
             lastToken = OPERAND;
-            ListGraph g;
+            AutomataGraph g;
             int start = g.createVertex();
             int end = g.createVertex();
             g.setStart(start);
@@ -108,39 +109,39 @@ ListGraph Automata::build()
     start = graph.getStart();
     final.insert(graph.getEnd());
 
-    return ListGraph(graph);
+    return AutomataGraph(graph);
 }
 
 void Automata::applyOperator(char op)
 {
     if (op == '*')
     {
-        ListGraph g = expressions.top();
+        AutomataGraph g = expressions.top();
         expressions.pop();
 
-        ListGraph newGraph = star(g);
+        AutomataGraph newGraph = star(g);
         expressions.push(newGraph);
 
         // delete &g;
     }
     else if (op == '+')
     {
-        ListGraph g = expressions.top();
+        AutomataGraph g = expressions.top();
         expressions.pop();
 
-        ListGraph newGraph = plus(g);
+        AutomataGraph newGraph = plus(g);
         expressions.push(newGraph);
 
         // delete &g;
     }
-    else if (op == '.')
+    else if (op == CONCAT_OPERATOR)
     {
-        ListGraph gRight = expressions.top();
+        AutomataGraph gRight = expressions.top();
         expressions.pop();
-        ListGraph gLeft = expressions.top();
+        AutomataGraph gLeft = expressions.top();
         expressions.pop();
 
-        ListGraph newGraph = concat(gLeft, gRight);
+        AutomataGraph newGraph = concat(gLeft, gRight);
         expressions.push(newGraph);
 
         // delete &gLeft;
@@ -148,12 +149,12 @@ void Automata::applyOperator(char op)
     }
     else if (op == '|')
     {
-        ListGraph gRight = expressions.top();
+        AutomataGraph gRight = expressions.top();
         expressions.pop();
-        ListGraph gLeft = expressions.top();
+        AutomataGraph gLeft = expressions.top();
         expressions.pop();
 
-        ListGraph newGraph = orOp(gLeft, gRight);
+        AutomataGraph newGraph = orOp(gLeft, gRight);
         expressions.push(newGraph);
 
         // delete &gLeft;
@@ -161,14 +162,14 @@ void Automata::applyOperator(char op)
     }
 }
 
-ListGraph Automata::transform()
+AutomataGraph Automata::transform()
 {
     std::map<int, std::set<int>> setsMap;
     std::map<int, std::set<int>> PreSetsMap;
     std::map<int, std::set<std::pair<int, char>>> edges = graph.getEdges();
 
     std::queue<int> q;
-    ListGraph newGraph;
+    AutomataGraph newGraph;
     int newStart = newGraph.createVertex();
     newGraph.setStart(newStart);
     q.push(newStart);
@@ -227,15 +228,15 @@ ListGraph Automata::transform()
     }
 
     graph = newGraph;
-    return ListGraph(newGraph);
+    return AutomataGraph(newGraph);
 }
 
-ListGraph Automata::star(const ListGraph &g)
+AutomataGraph Automata::star(const AutomataGraph &g)
 {
     int gStart = g.getStart();
     int gEnd = g.getEnd();
 
-    ListGraph newGraph;
+    AutomataGraph newGraph;
     int start = newGraph.createVertex();
     newGraph.setStart(start);
     int next = newGraph.createVertex();
@@ -252,12 +253,12 @@ ListGraph Automata::star(const ListGraph &g)
     return newGraph;
 }
 
-ListGraph Automata::plus(const ListGraph &g)
+AutomataGraph Automata::plus(const AutomataGraph &g)
 {
     int gStart = g.getStart();
     int gEnd = g.getEnd();
 
-    ListGraph newGraph;
+    AutomataGraph newGraph;
     int start = newGraph.createVertex();
     newGraph.setStart(start);
     int next = newGraph.createVertex();
@@ -273,14 +274,14 @@ ListGraph Automata::plus(const ListGraph &g)
     return newGraph;
 }
 
-ListGraph Automata::concat(const ListGraph &gLeft, const ListGraph &gRight)
+AutomataGraph Automata::concat(const AutomataGraph &gLeft, const AutomataGraph &gRight)
 {
     int startLeft = gLeft.getStart();
     int endLeft = gLeft.getEnd();
     int startRight = gRight.getStart();
     int endRight = gRight.getEnd();
 
-    ListGraph newGraph;
+    AutomataGraph newGraph;
 
     int start = newGraph.createVertex();
     newGraph.setStart(start);
@@ -293,14 +294,14 @@ ListGraph Automata::concat(const ListGraph &gLeft, const ListGraph &gRight)
     return newGraph;
 }
 
-ListGraph Automata::orOp(const ListGraph &gLeft, const ListGraph &gRight)
+AutomataGraph Automata::orOp(const AutomataGraph &gLeft, const AutomataGraph &gRight)
 {
     int startLeft = gLeft.getStart();
     int endLeft = gLeft.getEnd();
     int startRight = gRight.getStart();
     int endRight = gRight.getEnd();
 
-    ListGraph newGraph;
+    AutomataGraph newGraph;
 
     int start = newGraph.createVertex();
     newGraph.setStart(start);
