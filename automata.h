@@ -32,6 +32,8 @@ public:
 
     AutomataGraph build();
     AutomataGraph transform();
+    int getStart() const { return start; }
+    std::set<int> getFinal() const { return final; }
 };
 
 AutomataGraph Automata::build()
@@ -107,7 +109,6 @@ AutomataGraph Automata::build()
 
     graph = expressions.top();
     start = graph.getStart();
-    final.insert(graph.getEnd());
 
     return AutomataGraph(graph);
 }
@@ -201,19 +202,21 @@ AutomataGraph Automata::transform()
 
             bool exists = false;
 
+            int next;
             for (auto [v, eClosure] : setsMap)
             {
                 if (eClosure == nextSetClosure)
                 {
                     exists = true;
                     newGraph.addEdge(current, v, c);
+                    next = v;
                     break;
                 }
             }
 
             if (!exists)
             {
-                int next = newGraph.createVertex();
+                next = newGraph.createVertex();
                 newGraph.addEdge(current, next, c);
                 setsMap[next] = nextSetClosure;
                 PreSetsMap[next] = nextSet;
@@ -222,7 +225,7 @@ AutomataGraph Automata::transform()
 
             if (nextSetClosure.find(graph.getEnd()) != nextSetClosure.end())
             {
-                final.insert(current);
+                final.insert(next);
             }
         }
     }

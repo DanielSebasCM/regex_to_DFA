@@ -3,7 +3,7 @@
 
 int main()
 {
-    Automata a("a(b|c)*d");
+    Automata a("(a|b)*abb(a|b)*");
 
     AutomataGraph NFA = a.build();
 
@@ -14,4 +14,12 @@ int main()
 
     std::cout << "DFA:" << std::endl;
     std::cout << DFA.toString() << std::endl;
+
+    std::cout << "Start: " << a.getStart() << std::endl;
+    std::cout << "Final: ";
+    for (auto f : a.getFinal())
+    {
+        std::cout << f << " ";
+    }
+    std::cout << std::endl;
 }
