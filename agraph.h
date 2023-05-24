@@ -27,7 +27,7 @@ class AutomataGraph
 {
 private:
 	int start;
-	int end;
+	std::set<int> final;
 	int next;
 	std::set<int> vertexes;
 	std::map<int, std::set<std::pair<int, char>>> edges;
@@ -55,8 +55,9 @@ public:
 	void setStart(int s) { start = s; }
 	int getStart() const { return start; }
 
-	void setEnd(int e) { end = e; }
-	int getEnd() const { return end; }
+	void addFinal(int f) { final.insert(f); }
+	void setFinal(std::set<int> e) { final = e; }
+	std::set<int> getFinal() const { return final; }
 
 	int getNext() { return next; }
 
@@ -74,7 +75,7 @@ AutomataGraph::AutomataGraph()
 AutomataGraph::AutomataGraph(const AutomataGraph &g)
 {
 	start = g.start;
-	end = g.end;
+	final = g.final;
 	next = g.next;
 	vertexes = g.vertexes;
 	edges = g.edges;
@@ -200,7 +201,7 @@ std::pair<int, int> AutomataGraph::connectGraphToVertex(AutomataGraph g, int v)
 		}
 	}
 
-	return std::pair<int, int>(newVertexes[g.getStart()], newVertexes[g.getEnd()]);
+	return std::pair<int, int>(newVertexes[g.getStart()], newVertexes[*g.getFinal().begin()]);
 }
 
 std::string AutomataGraph::toString() const

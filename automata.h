@@ -9,8 +9,6 @@ class Automata
 {
 private:
     AutomataGraph graph;
-    int start;
-    std::set<int> final;
     std::set<char> alphabet;
 
     std::stack<AutomataGraph> expressions;
@@ -32,8 +30,6 @@ public:
 
     AutomataGraph build();
     AutomataGraph transform();
-    int getStart() const { return start; }
-    std::set<int> getFinal() const { return final; }
 };
 
 AutomataGraph Automata::build()
@@ -91,7 +87,7 @@ AutomataGraph Automata::build()
             int start = g.createVertex();
             int end = g.createVertex();
             g.setStart(start);
-            g.setEnd(end);
+            g.setFinal({end});
             g.addEdge(start, end, c);
             expressions.push(g);
             if (c != EPSILON)
@@ -108,8 +104,6 @@ AutomataGraph Automata::build()
     }
 
     graph = expressions.top();
-    start = graph.getStart();
-
     return AutomataGraph(graph);
 }
 
@@ -223,9 +217,9 @@ AutomataGraph Automata::transform()
                 q.push(next);
             }
 
-            if (nextSetClosure.find(graph.getEnd()) != nextSetClosure.end())
+            if (nextSetClosure.find(*graph.getFinal().begin()) != nextSetClosure.end())
             {
-                final.insert(next);
+                newGraph.addFinal(next);
             }
         }
     }
@@ -237,7 +231,7 @@ AutomataGraph Automata::transform()
 AutomataGraph Automata::star(const AutomataGraph &g)
 {
     int gStart = g.getStart();
-    int gEnd = g.getEnd();
+    int gEnd = *g.getFinal().begin();
 
     AutomataGraph newGraph;
     int start = newGraph.createVertex();
@@ -249,7 +243,7 @@ AutomataGraph Automata::star(const AutomataGraph &g)
     newGraph.addEdge(newEnd, newStart, EPSILON);
 
     int end = newGraph.createVertex();
-    newGraph.setEnd(end);
+    newGraph.setFinal({end});
     newGraph.addEdge(start, end, EPSILON);
     newGraph.addEdge(newEnd, end, EPSILON);
 
@@ -259,7 +253,7 @@ AutomataGraph Automata::star(const AutomataGraph &g)
 AutomataGraph Automata::plus(const AutomataGraph &g)
 {
     int gStart = g.getStart();
-    int gEnd = g.getEnd();
+    int gEnd = *g.getFinal().begin();
 
     AutomataGraph newGraph;
     int start = newGraph.createVertex();
@@ -271,7 +265,7 @@ AutomataGraph Automata::plus(const AutomataGraph &g)
     newGraph.addEdge(newEnd, newStart, EPSILON);
 
     int end = newGraph.createVertex();
-    newGraph.setEnd(end);
+    newGraph.setFinal({end});
     newGraph.addEdge(newEnd, end, EPSILON);
 
     return newGraph;
@@ -280,9 +274,9 @@ AutomataGraph Automata::plus(const AutomataGraph &g)
 AutomataGraph Automata::concat(const AutomataGraph &gLeft, const AutomataGraph &gRight)
 {
     int startLeft = gLeft.getStart();
-    int endLeft = gLeft.getEnd();
+    int endLeft = *gLeft.getFinal().begin();
     int startRight = gRight.getStart();
-    int endRight = gRight.getEnd();
+    int endRight = *gRight.getFinal().begin();
 
     AutomataGraph newGraph;
 
@@ -292,7 +286,7 @@ AutomataGraph Automata::concat(const AutomataGraph &gLeft, const AutomataGraph &
     auto [newLStart, newLEnd] = newGraph.connectGraphToVertex(gLeft, start);
     auto [newRStart, newREnd] = newGraph.connectGraphToVertex(gRight, newLEnd);
 
-    newGraph.setEnd(newREnd);
+    newGraph.setFinal({newREnd});
 
     return newGraph;
 }
@@ -300,9 +294,9 @@ AutomataGraph Automata::concat(const AutomataGraph &gLeft, const AutomataGraph &
 AutomataGraph Automata::orOp(const AutomataGraph &gLeft, const AutomataGraph &gRight)
 {
     int startLeft = gLeft.getStart();
-    int endLeft = gLeft.getEnd();
+    int endLeft = *gLeft.getFinal().begin();
     int startRight = gRight.getStart();
-    int endRight = gRight.getEnd();
+    int endRight = *gRight.getFinal().begin();
 
     AutomataGraph newGraph;
 
@@ -319,7 +313,7 @@ AutomataGraph Automata::orOp(const AutomataGraph &gLeft, const AutomataGraph &gR
     auto [newRStart, newREnd] = newGraph.connectGraphToVertex(gRight, nextR);
 
     int end = newGraph.createVertex();
-    newGraph.setEnd(end);
+    newGraph.setFinal({end});
     newGraph.addEdge(newLEnd, end, EPSILON);
     newGraph.addEdge(newREnd, end, EPSILON);
 
