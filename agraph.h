@@ -31,13 +31,13 @@ private:
 	int next;
 	std::set<int> vertexes;
 	std::map<int, std::set<std::pair<int, char>>> edges;
+	void addVertex(int v);
 
 public:
 	AutomataGraph();
 	AutomataGraph(const AutomataGraph &);
 
 	void addEdge(int from, int to, char l);
-	void addVertex(int v);
 
 	bool containsVertex(int v) const;
 
@@ -168,10 +168,7 @@ int AutomataGraph::createVertex()
 {
 	int v = next;
 	next++;
-
-	vertexes.insert(v);
-	edges[v] = std::set<std::pair<int, char>>();
-
+	addVertex(v);
 	return v;
 }
 
