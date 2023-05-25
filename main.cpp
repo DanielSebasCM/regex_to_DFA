@@ -3,7 +3,7 @@
 
 int main()
 {
-    Automata a("(a|b)*abb(a|b)*");
+    Automata a("b+a*");
 
     AutomataGraph NFA = a.build();
 

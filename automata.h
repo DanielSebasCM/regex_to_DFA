@@ -48,9 +48,8 @@ AutomataGraph Automata::build()
         case '(':
 
             if (lastToken == OPERAND)
-            {
                 operators.push(CONCAT_OPERATOR);
-            }
+
             operators.push(c);
             lastToken = OPERATOR;
             break;
@@ -76,7 +75,6 @@ AutomataGraph Automata::build()
             lastToken = OPERATOR;
             break;
         default:
-
             if (lastToken == OPERAND)
             {
                 operators.push(CONCAT_OPERATOR);
@@ -116,7 +114,6 @@ void Automata::applyOperator(char op)
 
         AutomataGraph newGraph = star(g);
         expressions.push(newGraph);
-
         // delete &g;
     }
     else if (op == '+')
@@ -126,7 +123,6 @@ void Automata::applyOperator(char op)
 
         AutomataGraph newGraph = plus(g);
         expressions.push(newGraph);
-
         // delete &g;
     }
     else if (op == CONCAT_OPERATOR)
@@ -138,7 +134,6 @@ void Automata::applyOperator(char op)
 
         AutomataGraph newGraph = concat(gLeft, gRight);
         expressions.push(newGraph);
-
         // delete &gLeft;
         // delete &gRight;
     }
@@ -151,7 +146,6 @@ void Automata::applyOperator(char op)
 
         AutomataGraph newGraph = orOp(gLeft, gRight);
         expressions.push(newGraph);
-
         // delete &gLeft;
         // delete &gRight;
     }
@@ -160,7 +154,6 @@ void Automata::applyOperator(char op)
 AutomataGraph Automata::transform()
 {
     std::map<int, std::set<int>> setsMap;
-    std::map<int, std::set<int>> PreSetsMap;
     std::map<int, std::set<std::pair<int, char>>> edges = graph.getEdges();
 
     std::queue<int> q;
@@ -168,8 +161,7 @@ AutomataGraph Automata::transform()
     int newStart = newGraph.createVertex();
     newGraph.setStart(newStart);
     q.push(newStart);
-    setsMap.insert(std::pair<int, std::set<int>>(newStart, graph.eClosure(newStart)));
-    PreSetsMap.insert(std::pair<int, std::set<int>>(newStart, graph.getNeighbours(newStart)));
+    setsMap[newStart] = {graph.eClosure(newStart)};
 
     while (!q.empty())
     {
@@ -213,7 +205,6 @@ AutomataGraph Automata::transform()
                 next = newGraph.createVertex();
                 newGraph.addEdge(current, next, c);
                 setsMap[next] = nextSetClosure;
-                PreSetsMap[next] = nextSet;
                 q.push(next);
             }
 
